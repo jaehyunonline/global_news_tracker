@@ -34,7 +34,7 @@ config.init_session_state()
 
 def get_sns_outage_news(keyword_):
     result = {'제목': 'test tweets', '언론사': 'twitter', '발행시간': '2024-08-29 14:45 +09:00', '링크': 'https://x.com/login'}
-
+    #test
     df = pd.DataFrame(result)
     return df
 
