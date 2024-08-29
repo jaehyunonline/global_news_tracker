@@ -5,6 +5,10 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.chrome.options import Options
+from webdriver_manager.core.os_manager import ChromeType
+from selenium_stealth import stealth
+
 from urllib.parse import quote  # URL 인코딩을 위한 모듈
 import time
 
