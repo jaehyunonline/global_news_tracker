@@ -340,6 +340,8 @@ st.session_state.search_interval_min = st.sidebar.number_input('새로고침 주
                                                                value=st.session_state.search_interval_min,
                                                                format='%d')
 
+search_button = st.sidebar.button('검색')
+
 st.sidebar.divider()
 st.sidebar.write('❓ https://downdetector.com')
 
@@ -366,7 +368,8 @@ if uploaded_file is not None:
 
 
 # 서비스 선택시 처리
-if service_code_name:
+if search_button:
+    search_button=False
     # 본문 화면 구성
     title_placeholder = st.empty()
     col1, col2 = st.columns(2)
@@ -407,32 +410,32 @@ if service_code_name:
         fetch_news(service_code_name)
 
 
-# 주기적으로 페이지를 새로고침한다.
-# 사이드바에 타이머 표기
-st.sidebar.divider()
+# # 주기적으로 페이지를 새로고침한다.
+# # 사이드바에 타이머 표기
+# st.sidebar.divider()
 
-# 타이머를 표시할 위치 예약
-timer_placeholder = st.sidebar.empty()
+# # 타이머를 표시할 위치 예약
+# timer_placeholder = st.sidebar.empty()
 
-# 카운트다운 초 계산
-if service_code_name:
-    if st.session_state.search_interval_timer_cache <= 0:
-        st.session_state.search_interval_timer_cache = st.session_state.search_interval_min * 60
+# # 카운트다운 초 계산
+# if service_code_name:
+#     if st.session_state.search_interval_timer_cache <= 0:
+#         st.session_state.search_interval_timer_cache = st.session_state.search_interval_min * 60
 
-    # 타이머 실행
-    while st.session_state.search_interval_timer_cache >= 0:
-        # 타이머 갱신
-        timer_placeholder.markdown(f"⏳ 재검색까지 {st.session_state.search_interval_timer_cache}초")
+#     # 타이머 실행
+#     while st.session_state.search_interval_timer_cache >= 0:
+#         # 타이머 갱신
+#         timer_placeholder.markdown(f"⏳ 재검색까지 {st.session_state.search_interval_timer_cache}초")
 
-        # 1초 대기
-        time.sleep(1)
+#         # 1초 대기
+#         time.sleep(1)
 
-        # 타이머 감소
-        st.session_state.search_interval_timer_cache -= 1
+#         # 타이머 감소
+#         st.session_state.search_interval_timer_cache -= 1
 
-    # 타이머 완료 메시지
-    timer_placeholder.markdown("⏰ 카운트다운 완료! 서비스 상태 재검색!")
+#     # 타이머 완료 메시지
+#     timer_placeholder.markdown("⏰ 카운트다운 완료! 서비스 상태 재검색!")
 
-    logging.info('재검색!!!')
-    config.init_status_df()  # 서비스 상태 초기화
-    st.rerun()
+#     logging.info('재검색!!!')
+#     config.init_status_df()  # 서비스 상태 초기화
+#     st.rerun()
