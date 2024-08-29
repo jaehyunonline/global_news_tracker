@@ -11,6 +11,10 @@ from selenium_stealth import stealth
 
 from urllib.parse import quote  # URL 인코딩을 위한 모듈
 import time
+import get_downdetector_web 
+
+import logging
+import time
 
 # Twitter 로그인 페이지 URL
 TWITTER_URL = "https://twitter.com/login"
@@ -29,19 +33,22 @@ def slow_typing(element, text, delay=0.05):
         element.send_keys(char)
         time.sleep(delay)
 
-def twitter_login(driver, username, password):
+# def twitter_login(driver, username, password):
+def twitter_login():
     driver.get(TWITTER_URL)
+    logging.info(f"{TWITTER_URL} 접속 완료")
+    time.sleep(3)
     
     # 사용자 이름 입력
-    username_input = WebDriverWait(driver, 20).until(
+    username_input = WebDriverWait(driver, 30).until(
         EC.presence_of_element_located((By.NAME, "text"))
     )
     slow_typing(username_input, username)
     username_input.send_keys(Keys.RETURN)
-    time.sleep(3)
+    
 
     # 비밀번호 입력
-    password_input = WebDriverWait(driver, 20).until(
+    password_input = WebDriverWait(driver, 30).until(
         EC.presence_of_element_located((By.NAME, "password"))
     )
     slow_typing(password_input, password)
@@ -68,14 +75,17 @@ def scroll_down(driver, scroll_pause_time=2):
         
         last_height = new_height
 
-def search_tweets_once(driver, query):
+# def search_tweets_once(driver, query):
+def search_tweets_once(query):
     """한 번만 검색하여 트윗을 가져오는 함수."""
     # URL 인코딩
+    logging.info(f"{query} 검색합니다.")
     encoded_query = quote(query)
     
     # 트위터 검색 URL 생성
     search_url = f"https://x.com/search?q={encoded_query}&src=typed_query&f=live"
     driver.get(search_url)
+    logging.info(f"{query} 검색 완료")
 
     # 트윗 요소가 로드될 때까지 대기
     WebDriverWait(driver, 20).until(
@@ -136,27 +146,13 @@ def search_tweets_scroll(driver, query, max_tweets=50):
 # 크레덴셜 파일 경로
 credentials_file = 'twitter_credentials.txt'
 
-# 사용자 이름과 비밀번호 로드
+# # 사용자 이름과 비밀번호 로드
 username, password = load_credentials(credentials_file)
-options = Options()
-options.add_argument("start-maximized")
-options.add_argument("--disable-gpu")
-options.add_argument("--headless")
-# options.add_argument("--headless=new")  # 최신 헤드리스 모드를 사용
-options.add_experimental_option("excludeSwitches", ["enable-automation"])
-options.add_experimental_option('useAutomationExtension', False)
+driver = get_downdetector_web.CHROME_DRIVER
 
-# verify=False 관련 설정
-options.add_argument('--ignore-certificate-errors')
-options.add_argument('--disable-web-security')
-options.add_argument('--allow-running-insecure-content')
-
-driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
-# driver = webdriver.Chrome(
-#             service=Service(ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install()),
-#             options=options,
-#         )
+logging.info('driver 불러오기 완료')
 # twitter_login(driver, username, password)
+# logging.info('트위터 로그인 완료')
 
 
 def main():

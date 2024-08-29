@@ -17,7 +17,6 @@ import sys
 import logging
 import matplotlib.pyplot as plt
 
-
 # 필드명
 NAME = 'Name'
 VALUES = "Values"
@@ -80,7 +79,7 @@ def get_driver():
 options = Options()
 options.add_argument("start-maximized")
 options.add_argument("--disable-gpu")
-options.add_argument("--headless")
+# options.add_argument("--headless")
 # options.add_argument("--headless=new")  # 최신 헤드리스 모드를 사용
 
 # options.add_argument("--no-sandbox")
@@ -233,4 +232,5 @@ if __name__ == '__main__':
         df_sample = df.head(5).reset_index(drop=True)
         make_plot(df_sample)
     # CHROME_DRIVER.quit()  # 테스트일 경우엔 종료해준다.
+
 

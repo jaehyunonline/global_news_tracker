@@ -14,7 +14,9 @@ from google.cloud import translate_v2 as translate  # pip install google-cloud-t
 from google.oauth2 import service_account
 import config
 import reddit_bot
-# import twitter_bot
+import twitter_bot
+
+
 
 # 로깅 설정
 # logging.basicConfig(level=logging.INFO)
@@ -32,72 +34,24 @@ config.init_session_state()
 # 구글 SNS 가져오기 #
 # # # # # # # # # #
 
-
-def get_sns_outage_news(keyword_):
+def get_sns_outage_twitter(keyword_):
     ##크롤링~~~
-    
-    # result = {'제목': ['test tweets'], '언론사': ['twitter'], '발행시간': ['2024-08-29 14:45 +09:00'], '링크': ['https://x.com/login']}
+    logging.info('get_sns_outage_news')
+    # twitter_bot.twitter_login()
+    # logging.info('트위터 로그인 완료')
+
+    twitter_bot.search_tweets_once(keyword_)
+
+    result = {'제목': ['test tweets'], '언론사': ['twitter'], '발행시간': ['2024-08-29 14:45 +09:00'], '링크': ['https://x.com/login']}
     #test
-    result = reddit_bot.get_result(keyword_)
+    # result = reddit_bot.get_result(keyword_)
     df = pd.DataFrame(result)
     return df
 
-def get_google_outage_news(keyword_):
-    query = keyword_
-    if and_keyword:
-        query += ' ' + and_keyword[0]
-
-    url = f"https://news.google.com/rss/search?q={query}+when:{search_hour}h"
-    url += f'&hl=en-US&gl=US&ceid=US:en'
-    url = url.replace(' ', '%20')
-
-    title_list = []
-    source_list = []
-    pubtime_list = []
-    link_list = []
-
-    try:
-        res = requests.get(url)  # , verify=False)
-        logging.info('원본 링크: ' + url)
-
-        if res.status_code == 200:
-            datas = feedparser.parse(res.text).entries
-            for data in datas:
-                title = data.title
-                logging.info('구글SNS제목(원본): ' + title)
-
-                minus_index = title.rindex(' - ')
-                title = title[:minus_index].strip()
-
-                # 기사 제목에 검색 키워드가 없으면 넘긴다.
-                if keyword_.lower() not in title.lower():
-                    continue
-
-                title_list.append(title)
-                source_list.append(data.source.title)
-                link_list.append(data.link)
-
-                pubtime = datetime.strptime(data.published, "%a, %d %b %Y %H:%M:%S %Z")
-                # GMT+9 (Asia/Seoul)으로 변경
-                gmt_plus_9 = pytz.FixedOffset(540)  # 9 hours * 60 minutes = 540 minutes
-                pubtime = pubtime.replace(tzinfo=pytz.utc).astimezone(gmt_plus_9)
-
-                pubtime_str = pubtime.strftime('%Y-%m-%d %H:%M:%S')
-                pubtime_list.append(pubtime_str)
-
-        else:
-            logging.error("Google SNS 수집 실패! Error Code: " + str(res.status_code))
-            logging.error(str(res))
-            return None
-
-    except Exception as e:
-        logging.error(e)
-        logging.error("Google SNS RSS 피드 조회 오류 발생!")
-        return None
-
-    # 결과를 dict 형태로 저장
-    result = {'제목': title_list, '언론사': source_list, '발행시간': pubtime_list, '링크': link_list}
-
+def get_sns_outage_reddit(keyword_):
+    ##크롤링~~~
+    logging.info('get_sns_outage_reddit')
+    result = reddit_bot.get_result(keyword_)
     df = pd.DataFrame(result)
     return df
 
@@ -148,19 +102,31 @@ def display_news_df(ndf, keyword_):
         st.write(f'✅ 신규 SNS 없습니다. ({current_time})')
 
 
-def fetch_news(keyword_, infinite_loop=False):
+def fetch_sns_reddit(keyword_, infinite_loop=False):
     with st.spinner('SNS 검색중...'):
-        news_df_ = get_sns_outage_news(keyword_)
+        news_df_ = get_sns_outage_reddit(keyword_)
         # st.write(news_df_)
         display_news_df(news_df_, keyword_)
 
     while infinite_loop:
         time.sleep(st.session_state.search_interval_min * 60)
         with st.spinner('SNS 검색중...'):
-            news_df_ = get_sns_outage_news(keyword_)
+            news_df_ = get_sns_outage_reddit(keyword_)
             # st.write(news_df_)
             display_news_df(news_df_, keyword_)
 
+def fetch_sns_twitter(keyword_, infinite_loop=False):
+    with st.spinner('SNS 검색중...'):
+        news_df_ = get_sns_outage_twitter(keyword_)
+        # st.write(news_df_)
+        display_news_df(news_df_, keyword_)
+
+    while infinite_loop:
+        time.sleep(st.session_state.search_interval_min * 60)
+        with st.spinner('SNS 검색중...'):
+            news_df_ = get_sns_outage_twitter(keyword_)
+            # st.write(news_df_)
+            display_news_df(news_df_, keyword_)
 
 # # # # # # # # # # # # # # #
 # 영어 번역
@@ -346,7 +312,12 @@ search_button = st.sidebar.button('검색')
 
 st.sidebar.divider()
 st.sidebar.write('❓ https://downdetector.com')
-
+try:
+    twitter_bot.twitter_login()
+    logging.info('트위터 로그인 완료')
+except Exception as e:
+    logging.info(e)
+    pass
 
 if not os.path.exists(config.KEY_PATH):
     uploaded_file = st.sidebar.file_uploader('API Key File', type=['json'], accept_multiple_files=False)
@@ -380,36 +351,17 @@ if search_button:
     col1_placeholder = col1.empty()
     col2_placeholder = col2.empty()
 
-    with st.spinner('서비스 상태 조회중...'):
-        status, report_list, _ = config.get_service_chart_mapdf(area=st.session_state.selected_area,
-                                                                service_name=service_code_name)
-
-        if status is None:
-            with title_placeholder.container():
-                st.subheader(f'**{service_code_name}**')
-        else:
-            # 상태
-            color, color_code, icon = config.get_status_color(service_code_name, status)
-
-            with title_placeholder.container():
-                st.subheader(f'**{service_code_name}**  :{color}[{icon}]')
-
     # 컬럼2 - 차트
     with col2_placeholder.container():
-        if report_list is not None:
-            st.write('📈 Live Report Chart (Last 24 hours)')
-
-            with st.container():
-                chart_data = pd.DataFrame(report_list, columns=["Report Count"])
-                st.line_chart(chart_data, color=color_code)
-        else:
-            st.write('')  # no report chart
+        st.session_state.news_list = []  # SNS 세션 클리어
+        st.write('📰 SNS List')
+        fetch_sns_twitter(service_code_name)
 
     # 컬럼1 - SNS
     with col1_placeholder.container():
         st.session_state.news_list = []  # SNS 세션 클리어
-        st.write('📰 News List')
-        fetch_news(service_code_name)
+        st.write('📰 SNS List')
+        fetch_sns_reddit(service_code_name)
 
 
 # # 주기적으로 페이지를 새로고침한다.
