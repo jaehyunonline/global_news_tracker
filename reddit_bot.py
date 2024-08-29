@@ -55,6 +55,8 @@ def get_result(keyword):
         # 게시물 내용 (selftext) 가져오기
         post_content = post.selftext if post.selftext else "No content available"
         result = {'제목': [post.title], '언론사': ['reddit'], '발행시간': [formatted_time], '링크': [post.url]}
+    
+    print(result)
 
     return result
 
@@ -63,4 +65,3 @@ def get_result(keyword):
 # result = {'제목': 'test tweets', '언론사': 'twitter', '발행시간': '2024-08-29 14:45 +09:00', '링크': 'https://x.com/login'}
 
 
-print(get_result('4chan'))
