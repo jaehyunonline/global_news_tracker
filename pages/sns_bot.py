@@ -40,11 +40,9 @@ def get_sns_outage_twitter(keyword_):
     # twitter_bot.twitter_login()
     # logging.info('트위터 로그인 완료')
 
-    twitter_bot.search_tweets_once(keyword_)
+    tweets_text, tweets_date, tweets_link, tweets_src = twitter_bot.search_tweets_once(keyword_)
 
-    result = {'제목': ['test tweets'], '언론사': ['twitter'], '발행시간': ['2024-08-29 14:45 +09:00'], '링크': ['https://x.com/login']}
-    #test
-    # result = reddit_bot.get_result(keyword_)
+    result = {'제목': tweets_text, '언론사': tweets_src, '발행시간': tweets_date, '링크': tweets_link}
     df = pd.DataFrame(result)
     return df
 
@@ -355,13 +353,19 @@ if search_button:
     with col2_placeholder.container():
         st.session_state.news_list = []  # SNS 세션 클리어
         st.write('📰 Twitter List')
-        fetch_sns_twitter(service_code_name)
+        if and_keyword:
+            fetch_sns_twitter(service_code_name+" "+and_keyword[0])
+        else:
+            fetch_sns_twitter(service_code_name)
 
     # 컬럼1 - SNS
     with col1_placeholder.container():
         st.session_state.news_list = []  # SNS 세션 클리어
         st.write('📰 Reddit List')
-        fetch_sns_reddit(service_code_name)
+        if and_keyword:
+            fetch_sns_reddit(service_code_name+" "+and_keyword[0])
+        else:
+            fetch_sns_twitter(service_code_name)
 
 
 # # 주기적으로 페이지를 새로고침한다.

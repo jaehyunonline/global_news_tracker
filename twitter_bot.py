@@ -12,6 +12,7 @@ from selenium_stealth import stealth
 from urllib.parse import quote  # URL 인코딩을 위한 모듈
 import time
 import get_downdetector_web 
+from datetime import datetime, timezone, timedelta
 
 import logging
 import time
@@ -32,6 +33,16 @@ def slow_typing(element, text, delay=0.05):
     for char in text:
         element.send_keys(char)
         time.sleep(delay)
+
+def convert_to_kst(utc_datetime_str):
+    # 문자열을 datetime 객체로 변환
+    utc_time = datetime.strptime(utc_datetime_str, "%Y-%m-%dT%H:%M:%S.%fZ")
+
+    # UTC 시간을 KST로 변환 (KST는 UTC+9)
+    kst_time = utc_time.replace(tzinfo=timezone.utc).astimezone(timezone(timedelta(hours=9)))
+
+    # KST 시간 문자열로 변환하여 반환
+    return kst_time.strftime('%Y-%m-%d %H:%M:%S')
 
 # # def twitter_login(driver, username, password):
 # def twitter_login():
@@ -126,18 +137,26 @@ def search_tweets_once(query):
     tweets_text = []
     tweets_date = []
     tweets_link = []
+    tweets_src = []
     
     all_tweets = []
     for tweet in tweets:
         try:
             tweet_text = tweet.find_element(By.XPATH, './/div[@data-testid="tweetText"]').text
-            tweet_date = tweet.find_element(By.XPATH, './/time').get_attribute('datetime')
+            tweet_date = convert_to_kst(tweet.find_element(By.XPATH, './/time').get_attribute('datetime'))
+            tweet_link = tweet.find_element(By.XPATH, './/a[@href]').get_attribute('href')
+
+            tweets_text.append(tweet_text)
+            tweets_date.append(tweet_date)
+            tweets_link.append(tweet_link)
+            tweets_src.append("twitter")
+
             all_tweets.append((tweet_text, tweet_date))
         except Exception as e:
             print(f"Error extracting tweet: {e}")
-    
-    for idx, (tweet_text, tweet_date) in enumerate(all_tweets, start=1):
-        print(f"Tweet {idx} [{tweet_date}]: {tweet_text}\n")
+    return tweets_text, tweets_date, tweets_link, tweets_src
+    # for idx, (tweet_text, tweet_date) in enumerate(all_tweets, start=1):
+    #     print(f"Tweet {idx} [{tweet_date}]: {tweet_text}\n")
 
 def search_tweets_scroll(driver, query, max_tweets=50):
     """스크롤 다운을 통해 여러 번 검색하여 트윗을 가져오는 함수."""
