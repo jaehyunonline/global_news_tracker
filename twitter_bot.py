@@ -134,7 +134,11 @@ credentials_file = 'twitter_credentials.txt'
 
 # 사용자 이름과 비밀번호 로드
 username, password = load_credentials(credentials_file)
-driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
+# driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
+driver = webdriver.Chrome(
+            service=ChromeService(ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install()),
+            options=options,
+        )
 twitter_login(driver, username, password)
 
 
