@@ -151,11 +151,11 @@ options.add_argument('--ignore-certificate-errors')
 options.add_argument('--disable-web-security')
 options.add_argument('--allow-running-insecure-content')
 
-# driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
-driver = webdriver.Chrome(
-            service=Service(ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install()),
-            options=options,
-        )
+driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
+# driver = webdriver.Chrome(
+#             service=Service(ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install()),
+#             options=options,
+#         )
 twitter_login(driver, username, password)
 
 
