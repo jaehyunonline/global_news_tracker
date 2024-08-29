@@ -349,14 +349,7 @@ if search_button:
     col1_placeholder = col1.empty()
     col2_placeholder = col2.empty()
 
-    # 컬럼2 - 차트
-    with col2_placeholder.container():
-        st.session_state.news_list = []  # SNS 세션 클리어
-        st.write('📰 Twitter List')
-        if and_keyword:
-            fetch_sns_twitter(service_code_name+" "+and_keyword[0])
-        else:
-            fetch_sns_twitter(service_code_name)
+
 
     # 컬럼1 - SNS
     with col1_placeholder.container():
@@ -364,6 +357,15 @@ if search_button:
         st.write('📰 Reddit List')
         if and_keyword:
             fetch_sns_reddit(service_code_name+" "+and_keyword[0])
+        else:
+            fetch_sns_reddit(service_code_name)
+
+    # 컬럼2 - 차트
+    with col2_placeholder.container():
+        st.session_state.news_list = []  # SNS 세션 클리어
+        st.write('📰 Twitter List')
+        if and_keyword:
+            fetch_sns_twitter(service_code_name+" "+and_keyword[0])
         else:
             fetch_sns_twitter(service_code_name)
 
