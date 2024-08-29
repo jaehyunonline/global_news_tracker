@@ -13,7 +13,7 @@ import streamlit as st
 from google.cloud import translate_v2 as translate  # pip install google-cloud-translate==2.0.1
 from google.oauth2 import service_account
 import config
-
+import twitter_bot
 
 # 로깅 설정
 # logging.basicConfig(level=logging.INFO)
@@ -28,9 +28,15 @@ config.init_session_state()
 
 
 # # # # # # # # # #
-# 구글 뉴스 가져오기 #
+# 구글 SNS 가져오기 #
 # # # # # # # # # #
 
+
+def get_sns_outage_news(keyword_):
+    result = {'제목': 'test tweets', '언론사': 'twitter', '발행시간': '2024-08-29 14:45 +09:00', '링크': 'https://x.com/login'}
+
+    df = pd.DataFrame(result)
+    return df
 
 def get_google_outage_news(keyword_):
     query = keyword_
@@ -54,7 +60,7 @@ def get_google_outage_news(keyword_):
             datas = feedparser.parse(res.text).entries
             for data in datas:
                 title = data.title
-                logging.info('구글뉴스제목(원본): ' + title)
+                logging.info('구글SNS제목(원본): ' + title)
 
                 minus_index = title.rindex(' - ')
                 title = title[:minus_index].strip()
@@ -76,13 +82,13 @@ def get_google_outage_news(keyword_):
                 pubtime_list.append(pubtime_str)
 
         else:
-            logging.error("Google 뉴스 수집 실패! Error Code: " + str(res.status_code))
+            logging.error("Google SNS 수집 실패! Error Code: " + str(res.status_code))
             logging.error(str(res))
             return None
 
     except Exception as e:
         logging.error(e)
-        logging.error("Google 뉴스 RSS 피드 조회 오류 발생!")
+        logging.error("Google SNS RSS 피드 조회 오류 발생!")
         return None
 
     # 결과를 dict 형태로 저장
@@ -98,19 +104,19 @@ def display_news_df(ndf, keyword_):
     current_time = datetime.now(kst).strftime('%Y-%m-%d %H:%M:%S')
 
     if ndf is None or len(ndf) == 0:
-        st.write(f'✅ 검색된 뉴스 없습니다. ({current_time})')
+        st.write(f'✅ 검색된 SNS 없습니다. ({current_time})')
         return
 
-    # st.write('뉴스 검색 결과')
+    # st.write('SNS 검색 결과')
 
     disp_cnt = 0
     for i, row in ndf.iterrows():
-        # 이미 출력했던 뉴스라면 스킵한다.
+        # 이미 출력했던 SNS라면 스킵한다.
         if row['제목'] in st.session_state.news_list:
-            logging.info('뉴스 스킵!!! - ' + row['제목'])
+            logging.info('SNS 스킵!!! - ' + row['제목'])
             continue
 
-        # 출력한 뉴스 리스트에 추가한다.
+        # 출력한 SNS 리스트에 추가한다.
         st.session_state.news_list.append(row['제목'])
         disp_cnt += 1
 
@@ -133,21 +139,21 @@ def display_news_df(ndf, keyword_):
         # st.write(' - 언론사: ' + row['언론사'] + '  - 발행시각: ' + row['발행시간'])
 
     if disp_cnt > 0:
-        st.write(f'✅ 뉴스 표시 완료 ({current_time})')
+        st.write(f'✅ SNS 표시 완료 ({current_time})')
     else:
-        st.write(f'✅ 신규 뉴스 없습니다. ({current_time})')
+        st.write(f'✅ 신규 SNS 없습니다. ({current_time})')
 
 
 def fetch_news(keyword_, infinite_loop=False):
-    with st.spinner('뉴스 검색중...'):
-        news_df_ = get_google_outage_news(keyword_)
+    with st.spinner('SNS 검색중...'):
+        news_df_ = get_sns_outage_news(keyword_)
         # st.write(news_df_)
         display_news_df(news_df_, keyword_)
 
     while infinite_loop:
         time.sleep(st.session_state.search_interval_min * 60)
-        with st.spinner('뉴스 검색중...'):
-            news_df_ = get_google_outage_news(keyword_)
+        with st.spinner('SNS 검색중...'):
+            news_df_ = get_sns_outage_news(keyword_)
             # st.write(news_df_)
             display_news_df(news_df_, keyword_)
 
@@ -292,7 +298,7 @@ def get_multiple(values_sr):
 # # # # # # # # # #
 
 
-# st.title('뉴스 검색 봇')
+# st.title('SNS 검색 봇')
 
 
 # # # # # # # # # # # # # # #
@@ -324,9 +330,9 @@ service_code_name = st.sidebar.selectbox(
 )
 
 
-search_hour = st.sidebar.number_input('최근 몇시간의 뉴스를 검색할까요?', value=1, format='%d')
+search_hour = st.sidebar.number_input('최근 몇시간의 SNS를 검색할까요?', value=1, format='%d')
 
-and_keyword = st.sidebar.multiselect("뉴스 검색 추가 키워드", options=['outage', 'blackout', 'failure'], default=['outage'])
+and_keyword = st.sidebar.multiselect("SNS 검색 추가 키워드", options=['outage', 'blackout', 'failure','not working'], default=['outage'])
 
 st.session_state.search_interval_min = st.sidebar.number_input('새로고침 주기(분)',
                                                                value=st.session_state.search_interval_min,
@@ -392,9 +398,9 @@ if service_code_name:
         else:
             st.write('')  # no report chart
 
-    # 컬럼1 - 뉴스
+    # 컬럼1 - SNS
     with col1_placeholder.container():
-        st.session_state.news_list = []  # 뉴스 세션 클리어
+        st.session_state.news_list = []  # SNS 세션 클리어
         st.write('📰 News List')
         fetch_news(service_code_name)
 

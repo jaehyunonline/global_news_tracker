@@ -129,9 +129,18 @@ def search_tweets_scroll(driver, query, max_tweets=50):
     for idx, (tweet_text, tweet_date) in enumerate(all_tweets, start=1):
         print(f"Tweet {idx} [{tweet_date}]: {tweet_text}\n")
 
+# 크레덴셜 파일 경로
+credentials_file = 'twitter_credentials.txt'
+
+# 사용자 이름과 비밀번호 로드
+username, password = load_credentials(credentials_file)
+driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
+twitter_login(driver, username, password)
+
+
 def main():
     # 크레덴셜 파일 경로
-    credentials_file = 'credentials.txt'
+    credentials_file = 'twitter_credentials.txt'
 
     # 사용자 이름과 비밀번호 로드
     username, password = load_credentials(credentials_file)
