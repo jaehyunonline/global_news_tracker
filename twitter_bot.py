@@ -33,27 +33,57 @@ def slow_typing(element, text, delay=0.05):
         element.send_keys(char)
         time.sleep(delay)
 
-# def twitter_login(driver, username, password):
+# # def twitter_login(driver, username, password):
+# def twitter_login():
+#     driver.get(TWITTER_URL)
+#     logging.info(f"{TWITTER_URL} 접속 완료")
+#     time.sleep(3)
+    
+#     # 사용자 이름 입력
+#     username_input = WebDriverWait(driver, 30).until(
+#         EC.presence_of_element_located((By.NAME, "text"))
+#     )
+#     slow_typing(username_input, username)
+#     username_input.send_keys(Keys.RETURN)
+    
+
+#     # 비밀번호 입력
+#     password_input = WebDriverWait(driver, 30).until(
+#         EC.presence_of_element_located((By.NAME, "password"))
+#     )
+#     slow_typing(password_input, password)
+#     password_input.send_keys(Keys.RETURN)
+#     time.sleep(3)
+
 def twitter_login():
     driver.get(TWITTER_URL)
     logging.info(f"{TWITTER_URL} 접속 완료")
     time.sleep(3)
     
-    # 사용자 이름 입력
-    username_input = WebDriverWait(driver, 30).until(
-        EC.presence_of_element_located((By.NAME, "text"))
-    )
-    slow_typing(username_input, username)
-    username_input.send_keys(Keys.RETURN)
+    # 리다이렉트 체크
+    if driver.current_url == "https://x.com/home":
+        logging.info("이미 로그인 감지: 로그인 시도 중단")
+        return
     
+    # 사용자 이름 입력
+    try:
+        username_input = WebDriverWait(driver, 30).until(
+            EC.presence_of_element_located((By.NAME, "text"))
+        )
+        slow_typing(username_input, username)
+        username_input.send_keys(Keys.RETURN)
 
-    # 비밀번호 입력
-    password_input = WebDriverWait(driver, 30).until(
-        EC.presence_of_element_located((By.NAME, "password"))
-    )
-    slow_typing(password_input, password)
-    password_input.send_keys(Keys.RETURN)
-    time.sleep(3)
+        # 비밀번호 입력
+        password_input = WebDriverWait(driver, 30).until(
+            EC.presence_of_element_located((By.NAME, "password"))
+        )
+        slow_typing(password_input, password)
+        password_input.send_keys(Keys.RETURN)
+        time.sleep(3)
+
+    except TimeoutException:
+        logging.error("요소를 찾을 수 없습니다.")
+        return
 
 def scroll_down(driver, scroll_pause_time=2):
     """페이지를 아래로 스크롤하는 함수."""
@@ -93,6 +123,9 @@ def search_tweets_once(query):
     )
 
     tweets = driver.find_elements(By.XPATH, '//article[@role="article"]')
+    tweets_text = []
+    tweets_date = []
+    tweets_link = []
     
     all_tweets = []
     for tweet in tweets:

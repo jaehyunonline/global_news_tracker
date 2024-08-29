@@ -354,13 +354,13 @@ if search_button:
     # 컬럼2 - 차트
     with col2_placeholder.container():
         st.session_state.news_list = []  # SNS 세션 클리어
-        st.write('📰 SNS List')
+        st.write('📰 Twitter List')
         fetch_sns_twitter(service_code_name)
 
     # 컬럼1 - SNS
     with col1_placeholder.container():
         st.session_state.news_list = []  # SNS 세션 클리어
-        st.write('📰 SNS List')
+        st.write('📰 Reddit List')
         fetch_sns_reddit(service_code_name)
 
 
