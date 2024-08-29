@@ -54,7 +54,7 @@ def get_result(keyword):
         
         # 게시물 내용 (selftext) 가져오기
         post_content = post.selftext if post.selftext else "No content available"
-        result = {'제목': post.title, '언론사': 'reddit', '발행시간': formatted_time, '링크': post.url}
+        result = {'제목': [post.title], '언론사': ['reddit'], '발행시간': [formatted_time], '링크': [post.url]}
 
     return result
 
