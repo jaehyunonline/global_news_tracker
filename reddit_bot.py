@@ -42,7 +42,12 @@ result = {}
 def get_result(keyword):
     # 'all' 서브레딧에서 특정 키워드로 가장 최근 게시물 검색
     subreddit = reddit.subreddit('all')
-    recent_posts = subreddit.search(keyword, sort='new', limit=1)
+    recent_posts = subreddit.search(keyword, sort='new', limit=5)
+
+    title = []
+    aaa = []
+    issued_time = []
+    url = []
 
     for post in recent_posts:
         # Unix 타임스탬프를 UTC datetime 객체로 변환
@@ -54,8 +59,16 @@ def get_result(keyword):
         
         # 게시물 내용 (selftext) 가져오기
         post_content = post.selftext if post.selftext else "No content available"
-        result = {'제목': [post.title], '언론사': ['reddit'], '발행시간': [formatted_time], '링크': [post.url]}
+
+        title.append(post.title)
+        aaa.append('reddit')
+        issued_time.append(formatted_time)
+        url.append(post.url)
+
+        #result = {'제목': [post.title], '언론사': ['reddit'], '발행시간': [formatted_time], '링크': [post.url]}
     
+    result = {'제목': title, '언론사': aaa, '발행시간': issued_time, '링크': url}
+
     print(result)
 
     return result
