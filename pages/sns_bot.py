@@ -13,7 +13,7 @@ import streamlit as st
 from google.cloud import translate_v2 as translate  # pip install google-cloud-translate==2.0.1
 from google.oauth2 import service_account
 import config
-import twitter_bot
+# import twitter_bot
 
 # 로깅 설정
 # logging.basicConfig(level=logging.INFO)
@@ -33,7 +33,9 @@ config.init_session_state()
 
 
 def get_sns_outage_news(keyword_):
-    result = {'제목': 'test tweets', '언론사': 'twitter', '발행시간': '2024-08-29 14:45 +09:00', '링크': 'https://x.com/login'}
+    ##크롤링~~~
+    
+    result = {'제목': ['test tweets'], '언론사': ['twitter'], '발행시간': ['2024-08-29 14:45 +09:00'], '링크': ['https://x.com/login']}
     #test
     df = pd.DataFrame(result)
     return df

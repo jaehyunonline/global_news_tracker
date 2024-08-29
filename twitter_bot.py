@@ -156,7 +156,7 @@ driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
 #             service=Service(ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install()),
 #             options=options,
 #         )
-twitter_login(driver, username, password)
+# twitter_login(driver, username, password)
 
 
 def main():
@@ -181,5 +181,5 @@ def main():
     finally:
         driver.quit()
         
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     main()
