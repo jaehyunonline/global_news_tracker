@@ -13,4 +13,4 @@ for post in top_posts:
     print(f"Title: {post.title}")
     print(f"Score: {post.score}")
     print(f"URL: {post.url}")
-    print("------")
+    print("-------")
