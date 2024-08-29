@@ -44,6 +44,7 @@ AREA_LIST = ['US', 'JP']
 DASHBOARD_US_PAGE = 'pages/dashboard_us.py'
 DASHBOARD_JP_PAGE = 'pages/dashboard_jp.py'
 NEWSBOT_PAGE = 'pages/news_bot_dd.py'
+SNSBOT_PAGE = 'pages/sns_bot.py'
 
 GEOLOC_CACHE_FILE = 'geolocation_cache.pkl'
 TRANS_CACHE_FILE = 'trans_cache.pkl'
