@@ -134,9 +134,22 @@ credentials_file = 'twitter_credentials.txt'
 
 # 사용자 이름과 비밀번호 로드
 username, password = load_credentials(credentials_file)
+options = Options()
+options.add_argument("start-maximized")
+options.add_argument("--disable-gpu")
+options.add_argument("--headless")
+# options.add_argument("--headless=new")  # 최신 헤드리스 모드를 사용
+options.add_experimental_option("excludeSwitches", ["enable-automation"])
+options.add_experimental_option('useAutomationExtension', False)
+
+# verify=False 관련 설정
+options.add_argument('--ignore-certificate-errors')
+options.add_argument('--disable-web-security')
+options.add_argument('--allow-running-insecure-content')
+
 # driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
 driver = webdriver.Chrome(
-            service=ChromeService(ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install()),
+            service=Service(ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install()),
             options=options,
         )
 twitter_login(driver, username, password)
