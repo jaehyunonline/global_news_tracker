@@ -1,7 +1,7 @@
 # 파일명: article_summarizer.py
 
 import os
-import openai
+from openai import OpenAI
 from typing import List, Dict
 
 def get_api_key(key_name: str, file_path: str = ".openai_api_key") -> str:
@@ -34,7 +34,7 @@ def summarize_articles(articles: List[Dict[str, str]], api_key: str = None) -> D
     if not api_key:
         api_key = get_api_key("OPENAI_API_KEY")
     
-    openai.api_key = api_key
+    client = OpenAI(api_key=api_key)
 
     summaries = {}
     for article in articles:
@@ -53,7 +53,7 @@ def summarize_articles(articles: List[Dict[str, str]], api_key: str = None) -> D
 - 포인트 3
 """
 
-        response = openai.ChatCompletion.create(
+        response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
                 {"role": "system", "content": "You are a helpful assistant that summarizes articles."},
@@ -61,7 +61,7 @@ def summarize_articles(articles: List[Dict[str, str]], api_key: str = None) -> D
             ]
         )
 
-        summaries[article['title']] = response.choices[0].message['content']
+        summaries[article['title']] = response.choices[0].message.content
 
     # 전체 요약 생성
     all_titles = "\n".join([f"- {title}" for title in summaries.keys()])
@@ -73,7 +73,7 @@ def summarize_articles(articles: List[Dict[str, str]], api_key: str = None) -> D
 이 기사들의 개별 요약을 검토했다고 가정하고, 전체 기사들의 공통 주제와 트렌드에 대한 종합적인 요약을 100단어 이내로 제공해주세요.
 """
 
-    overall_response = openai.ChatCompletion.create(
+    overall_response = client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=[
             {"role": "system", "content": "You are a helpful assistant that provides overall summaries of multiple articles."},
@@ -81,7 +81,7 @@ def summarize_articles(articles: List[Dict[str, str]], api_key: str = None) -> D
         ]
     )
 
-    summaries["overall_summary"] = overall_response.choices[0].message['content']
+    summaries["overall_summary"] = overall_response.choices[0].message.content
 
     return summaries
 
