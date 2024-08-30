@@ -26,7 +26,8 @@ def load_credentials(file_path):
         lines = file.readlines()
         username = lines[0].strip()
         password = lines[1].strip()
-    return username, password
+        phone_number= lines[2].strip()
+    return username, password,phone_number
 
 def slow_typing(element, text, delay=0.05):
     """문자를 천천히 타이핑하는 함수."""
@@ -65,24 +66,35 @@ def convert_to_kst(utc_datetime_str):
 #     slow_typing(password_input, password)
 #     password_input.send_keys(Keys.RETURN)
 #     time.sleep(3)
-
 def twitter_login():
     driver.get(TWITTER_URL)
     logging.info(f"{TWITTER_URL} 접속 완료")
     time.sleep(3)
     
-    # 리다이렉트 체크
+    # 이미 로그인된 상태인지 확인
     if driver.current_url == "https://x.com/home":
         logging.info("이미 로그인 감지: 로그인 시도 중단")
         return
     
-    # 사용자 이름 입력
     try:
+        # 사용자 이름 또는 전화번호 입력
         username_input = WebDriverWait(driver, 30).until(
             EC.presence_of_element_located((By.NAME, "text"))
         )
-        slow_typing(username_input, username)
+        slow_typing(username_input, phone_number)
         username_input.send_keys(Keys.RETURN)
+        time.sleep(3)
+        
+        # 비정상 로그인이 감지되어 트위터 아이디를 입력해야 하는 상황 체크
+        try:
+            user_identifier_input = WebDriverWait(driver, 5).until(
+                EC.presence_of_element_located((By.NAME, "text"))
+            )
+            slow_typing(user_identifier_input, username)
+            user_identifier_input.send_keys(Keys.RETURN)
+            time.sleep(3)
+        except TimeoutException:
+            logging.info("비정상 로그인 감지 없이 비밀번호 입력 화면으로 이동")
 
         # 비밀번호 입력
         password_input = WebDriverWait(driver, 30).until(
@@ -95,6 +107,36 @@ def twitter_login():
     except TimeoutException:
         logging.error("요소를 찾을 수 없습니다.")
         return
+
+# def twitter_login():
+#     driver.get(TWITTER_URL)
+#     logging.info(f"{TWITTER_URL} 접속 완료")
+#     time.sleep(3)
+    
+#     # 리다이렉트 체크
+#     if driver.current_url == "https://x.com/home":
+#         logging.info("이미 로그인 감지: 로그인 시도 중단")
+#         return
+    
+#     # 사용자 이름 입력
+#     try:
+#         username_input = WebDriverWait(driver, 30).until(
+#             EC.presence_of_element_located((By.NAME, "text"))
+#         )
+#         slow_typing(username_input, username)
+#         username_input.send_keys(Keys.RETURN)
+
+#         # 비밀번호 입력
+#         password_input = WebDriverWait(driver, 30).until(
+#             EC.presence_of_element_located((By.NAME, "password"))
+#         )
+#         slow_typing(password_input, password)
+#         password_input.send_keys(Keys.RETURN)
+#         time.sleep(3)
+
+#     except TimeoutException:
+#         logging.error("요소를 찾을 수 없습니다.")
+#         return
 
 def scroll_down(driver, scroll_pause_time=2):
     """페이지를 아래로 스크롤하는 함수."""
@@ -199,7 +241,7 @@ def search_tweets_scroll(driver, query, max_tweets=50):
 credentials_file = 'twitter_info.txt'
 
 # # 사용자 이름과 비밀번호 로드
-username, password = load_credentials(credentials_file)
+username, password, phone_number = load_credentials(credentials_file)
 driver = get_downdetector_web.CHROME_DRIVER
 
 logging.info('driver 불러오기 완료')
@@ -212,7 +254,7 @@ def main():
     credentials_file = 'twitter_credentials.txt'
 
     # 사용자 이름과 비밀번호 로드
-    username, password = load_credentials(credentials_file)
+    username, password, phone_number = load_credentials(credentials_file)
 
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
 
