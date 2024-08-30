@@ -155,22 +155,32 @@ def fetch_and_summarize_sns(keyword_, sns_type):
         # OpenAI API 키 가져오기
         api_key = get_api_key("OPENAI_API_KEY")
         
+        # articles가 비어있는지 확인
+        if not articles:
+            st.warning(f"검색된 {sns_type} 게시물이 없습니다.")
+            return None, None
+        
         # 요약 생성
-        summaries = summarize_articles(articles, api_key)
+        try:
+            summaries = summarize_articles(articles, api_key)
+        except Exception as e:
+            st.error(f"요약 생성 중 오류 발생: {str(e)}")
+            return None, None
         
-        # 기존 내용 표시
-        display_news_df(news_df_, keyword_)
-        
-        # 요약 내용 표시
-        display_summary(summaries)
+        return summaries, news_df_
 
-def display_summary(summaries: dict):
+def display_summary(summaries: dict, sns_type: str):
     """
     요약된 내용을 표시하는 함수
     
     :param summaries: 요약된 내용을 담은 딕셔너리
+    :param sns_type: SNS 유형 (예: 'Reddit', 'Twitter')
     """
     st.subheader(f"📊 {sns_type} 내용 요약")
+    
+    if not summaries:
+        st.warning("요약할 내용이 없습니다.")
+        return
     
     # 전체 요약 표시
     with st.expander("전체 요약", expanded=True):
@@ -183,7 +193,6 @@ def display_summary(summaries: dict):
                 st.markdown(f"**{title}**")
                 st.write(summary)
                 st.divider()
-
 # # # # # # # # # # # # # # #
 # 영어 번역
 # # # # # # # # # # # # # # #
@@ -399,31 +408,45 @@ if uploaded_file is not None:
 # 서비스 선택시 처리
 if search_button:
     search_button = False
+    
     # 본문 화면 구성
-    title_placeholder = st.empty()
+    st.title(f"{service_code_name} SNS 분석")
+    
+    # Reddit과 Twitter 요약 및 데이터 가져오기
+    reddit_summaries, reddit_df = fetch_and_summarize_sns(service_code_name + " " + and_keyword[0] if and_keyword else service_code_name, 'Reddit')
+    twitter_summaries, twitter_df = fetch_and_summarize_sns(service_code_name + " " + and_keyword[0] if and_keyword else service_code_name, 'Twitter')
+    
+    # 요약 섹션
+    st.header("SNS 내용 요약")
     col1, col2 = st.columns(2)
-
-    # 빈 공간을 생성하여 나중에 내용을 업데이트할 준비
-    col1_placeholder = col1.empty()
-    col2_placeholder = col2.empty()
-
-    # 컬럼1 - Reddit SNS
-    with col1_placeholder.container():
-        st.session_state.news_list = []  # SNS 세션 클리어
-        st.write('📰 Reddit List')
-        if and_keyword:
-            fetch_and_summarize_sns(service_code_name + " " + and_keyword[0], 'Reddit')
+    
+    with col1:
+        if reddit_summaries:
+            display_summary(reddit_summaries, 'Reddit')
+    
+    with col2:
+        if twitter_summaries:
+            display_summary(twitter_summaries, 'Twitter')
+    
+    # SNS 게시물 섹션
+    st.header("SNS 게시물")
+    col3, col4 = st.columns(2)
+    
+    with col3:
+        st.subheader("Reddit 게시물")
+        if reddit_df is not None:
+            st.session_state.news_list = []  # SNS 세션 클리어
+            display_news_df(reddit_df, service_code_name)
         else:
-            fetch_and_summarize_sns(service_code_name, 'Reddit')
-
-    # 컬럼2 - Twitter SNS
-    with col2_placeholder.container():
-        st.session_state.news_list = []  # SNS 세션 클리어
-        st.write('📰 Twitter List')
-        if and_keyword:
-            fetch_and_summarize_sns(service_code_name + " " + and_keyword[0], 'Twitter')
+            st.write("Reddit 게시물을 가져오지 못했습니다.")
+    
+    with col4:
+        st.subheader("Twitter 게시물")
+        if twitter_df is not None:
+            st.session_state.news_list = []  # SNS 세션 클리어
+            display_news_df(twitter_df, service_code_name)
         else:
-            fetch_and_summarize_sns(service_code_name, 'Twitter')
+            st.write("Twitter 게시물을 가져오지 못했습니다.")
 
 # # 주기적으로 페이지를 새로고침한다.
 # # 사이드바에 타이머 표기
