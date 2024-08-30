@@ -3,6 +3,9 @@
 import os
 from openai import OpenAI
 from typing import List, Dict
+import logging
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 def get_api_key(key_name: str, file_path: str = ".openai_api_key") -> str:
     """OpenAI API 키를 가져오는 함수"""
@@ -38,6 +41,7 @@ def summarize_articles(articles: List[Dict[str, str]], api_key: str = None) -> D
 
     summaries = {}
     for article in articles:
+        logging.info(f"Summarizing article: {article['title']}")
         prompt = f"""
 다음 기사를 요약해주세요:
 
@@ -62,6 +66,7 @@ def summarize_articles(articles: List[Dict[str, str]], api_key: str = None) -> D
         )
 
         summaries[article['title']] = response.choices[0].message.content
+        logging.info(f"Article summarized successfully: {article['title']}")
 
     # 전체 요약 생성
     all_titles = "\n".join([f"- {title}" for title in summaries.keys()])
@@ -70,13 +75,18 @@ def summarize_articles(articles: List[Dict[str, str]], api_key: str = None) -> D
 
 {all_titles}
 
-이 기사들의 개별 요약을 검토했다고 가정하고, Bullet Point를 써서 두괄식으로 50자 이내로 제공해주세요.
+목록들을 다시한번더 요약해줘
+
+"""
+    system_prompt= f"""
+    두괄식 50자 이내로 요약해준 것을 먼저 말해주고 이동통신 시스템의 서비스 모니터링 관점에서  주의해야 할 항목들을 알려줘.
+
 """
 
     overall_response = client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=[
-            {"role": "system", "content": "You are a helpful assistant that provides overall summaries of multiple articles."},
+            {"role": "system", "content": system_prompt },
             {"role": "user", "content": overall_prompt}
         ]
     )

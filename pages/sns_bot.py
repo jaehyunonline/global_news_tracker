@@ -195,30 +195,30 @@ def fetch_and_summarize_sns(keyword_, sns_type):
     with st.spinner(f'{sns_type} SNS 검색, 번역 및 요약 중...'):
         if sns_type == 'Reddit':
             news_df_ = get_sns_outage_reddit(keyword_)
+            # Reddit 데이터 구조에 맞는 처리
+            news_df_['translated_title'] = news_df_['제목'].apply(lambda x: translate_text(x, 'KO'))
+            articles = [{'title': row['제목'], 'content': row['translated_title']} for _, row in news_df_.iterrows()]
         else:  # Twitter
             news_df_ = get_sns_outage_twitter(keyword_)
-        
-        # 번역 적용
-        news_df_['translated_title'] = news_df_['제목'].apply(lambda x: translate_text(x, 'KO'))
-        
-        # 요약을 위한 기사 리스트 생성
-        articles = [{'title': row['제목'], 'content': row['translated_title']} for _, row in news_df_.iterrows()]
-        
+            # Twitter 데이터 구조에 맞는 처리
+            news_df_['translated_text'] = news_df_['제목'].apply(lambda x: translate_text(x, 'KO'))
+            articles = [{'title': row['제목'], 'content': row['translated_text']} for _, row in news_df_.iterrows()]
+
         # OpenAI API 키 가져오기
         api_key = get_api_key("OPENAI_API_KEY")
-        
+
         # articles가 비어있는지 확인
         if not articles:
             st.warning(f"검색된 {sns_type} 게시물이 없습니다.")
             return None, None
-        
+
         # 요약 생성
         try:
             summaries = summarize_articles(articles, api_key)
         except Exception as e:
             st.error(f"요약 생성 중 오류 발생: {str(e)}")
             return None, None
-        
+
         return summaries, news_df_
 
 def display_summary(summaries: dict, sns_type: str):
@@ -468,7 +468,9 @@ if search_button:
     reddit_summaries, reddit_df = fetch_and_summarize_sns(service_code_name + " " + and_keyword[0] if and_keyword else service_code_name, 'Reddit')
     twitter_summaries, twitter_df = fetch_and_summarize_sns(service_code_name + " " + and_keyword[0] if and_keyword else service_code_name, 'Twitter')
     
-
+    # 요약 섹션
+    st.header("SNS 내용 요약")
+    col1, col2 = st.columns(2)
 
     # SNS 게시물 섹션
     st.header("SNS 게시물")
@@ -492,10 +494,7 @@ if search_button:
 
     # reddit_df, twitter_df 받아와서 번역
 
-    # 요약 섹션
-    st.header("SNS 내용 요약")
-    col1, col2 = st.columns(2)
-    
+
     with col1:
         if reddit_summaries:
             display_summary(reddit_summaries, 'Reddit')
