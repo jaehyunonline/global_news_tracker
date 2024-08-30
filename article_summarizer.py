@@ -70,7 +70,7 @@ def summarize_articles(articles: List[Dict[str, str]], api_key: str = None) -> D
 
 {all_titles}
 
-이 기사들의 개별 요약을 검토했다고 가정하고, 전체 기사들의 공통 주제와 트렌드에 대한 종합적인 요약을 100단어 이내로 제공해주세요.
+이 기사들의 개별 요약을 검토했다고 가정하고, Bullet Point를 써서 두괄식으로 50자 이내로 제공해주세요.
 """
 
     overall_response = client.chat.completions.create(
