@@ -86,7 +86,7 @@ def display_news_df(ndf, keyword_):
 
         # 제목 번역
         korean_title = translate_eng_to_kor(row['제목'])
-
+        
         with st.container(border=True):
             st.markdown(f'**{title}**')
             st.caption(f'{korean_title}')
