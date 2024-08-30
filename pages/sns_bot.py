@@ -16,6 +16,7 @@ import config
 import reddit_bot
 import twitter_bot
 from deepl_translator import translate_text
+from article_summarizer import summarize_articles, get_api_key
 
 
 # 로깅 설정
@@ -137,6 +138,51 @@ def fetch_sns_twitter(keyword_, infinite_loop=False):
             news_df_['translated_title'] = news_df_['제목'].apply(lambda x: translate_text(x, 'KO'))
             
             display_news_df(news_df_, keyword_)
+
+def fetch_and_summarize_sns(keyword_, sns_type):
+    with st.spinner(f'{sns_type} SNS 검색, 번역 및 요약 중...'):
+        if sns_type == 'Reddit':
+            news_df_ = get_sns_outage_reddit(keyword_)
+        else:  # Twitter
+            news_df_ = get_sns_outage_twitter(keyword_)
+        
+        # 번역 적용
+        news_df_['translated_title'] = news_df_['제목'].apply(lambda x: translate_text(x, 'KO'))
+        
+        # 요약을 위한 기사 리스트 생성
+        articles = [{'title': row['제목'], 'content': row['translated_title']} for _, row in news_df_.iterrows()]
+        
+        # OpenAI API 키 가져오기
+        api_key = get_api_key("OPENAI_API_KEY")
+        
+        # 요약 생성
+        summaries = summarize_articles(articles, api_key)
+        
+        # 기존 내용 표시
+        display_news_df(news_df_, keyword_)
+        
+        # 요약 내용 표시
+        display_summary(summaries)
+
+def display_summary(summaries: dict):
+    """
+    요약된 내용을 표시하는 함수
+    
+    :param summaries: 요약된 내용을 담은 딕셔너리
+    """
+    st.subheader(f"📊 {sns_type} 내용 요약")
+    
+    # 전체 요약 표시
+    with st.expander("전체 요약", expanded=True):
+        st.write(summaries.get("overall_summary", "전체 요약을 생성하지 못했습니다."))
+    
+    # 개별 게시물 요약 표시
+    with st.expander("개별 게시물 요약", expanded=False):
+        for title, summary in summaries.items():
+            if title != "overall_summary":
+                st.markdown(f"**{title}**")
+                st.write(summary)
+                st.divider()
 
 # # # # # # # # # # # # # # #
 # 영어 번역
@@ -352,7 +398,7 @@ if uploaded_file is not None:
 
 # 서비스 선택시 처리
 if search_button:
-    search_button=False
+    search_button = False
     # 본문 화면 구성
     title_placeholder = st.empty()
     col1, col2 = st.columns(2)
@@ -361,26 +407,23 @@ if search_button:
     col1_placeholder = col1.empty()
     col2_placeholder = col2.empty()
 
-
-
-    # 컬럼1 - SNS
+    # 컬럼1 - Reddit SNS
     with col1_placeholder.container():
         st.session_state.news_list = []  # SNS 세션 클리어
         st.write('📰 Reddit List')
         if and_keyword:
-            fetch_sns_reddit(service_code_name+" "+and_keyword[0])
+            fetch_and_summarize_sns(service_code_name + " " + and_keyword[0], 'Reddit')
         else:
-            fetch_sns_reddit(service_code_name)
+            fetch_and_summarize_sns(service_code_name, 'Reddit')
 
-    # 컬럼2 - 차트
+    # 컬럼2 - Twitter SNS
     with col2_placeholder.container():
         st.session_state.news_list = []  # SNS 세션 클리어
         st.write('📰 Twitter List')
         if and_keyword:
-            fetch_sns_twitter(service_code_name+" "+and_keyword[0])
+            fetch_and_summarize_sns(service_code_name + " " + and_keyword[0], 'Twitter')
         else:
-            fetch_sns_twitter(service_code_name)
-
+            fetch_and_summarize_sns(service_code_name, 'Twitter')
 
 # # 주기적으로 페이지를 새로고침한다.
 # # 사이드바에 타이머 표기
