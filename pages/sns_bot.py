@@ -37,7 +37,7 @@ config.init_session_state()
 
 def get_sns_outage_twitter(keyword_):
     ##크롤링~~~
-    logging.info('get_sns_outage_news')
+    #logging.info('get_sns_outage_news')
     # twitter_bot.twitter_login()
     # logging.info('트위터 로그인 완료')
 
@@ -55,7 +55,7 @@ def get_sns_outage_reddit(keyword_):
     return df
 
 
-def display_news_df(ndf, keyword_):
+def display_reddit_df(ndf, keyword_):
     # st.divider()
     kst = pytz.timezone('Asia/Seoul')
     current_time = datetime.now(kst).strftime('%Y-%m-%d %H:%M:%S')
@@ -76,13 +76,15 @@ def display_news_df(ndf, keyword_):
         # 출력한 SNS 리스트에 추가한다.
         st.session_state.news_list.append(row['제목'])
         disp_cnt += 1
-
+ 
         # title = row['제목'].replace(keyword_, f':yellow-background[{keyword_}]')
         # logging.info('keyword: ' + keyword_)
         # logging.info('before: ' + row['제목'])
         title = re.sub(keyword_, f':blue-background[{keyword_}]', row['제목'], flags=re.IGNORECASE)
+        body = re.sub(keyword_, f':blue-background[{keyword_}]', row['본문'], flags=re.IGNORECASE)
         if and_keyword:
             title = re.sub(and_keyword[0], f':blue-background[{and_keyword[0]}]', title, flags=re.IGNORECASE)
+            body = re.sub(and_keyword[0], f':blue-background[{and_keyword[0]}]', body, flags=re.IGNORECASE)
         # logging.info('after : ' + title)
 
         # 제목 번역
@@ -91,6 +93,8 @@ def display_news_df(ndf, keyword_):
         with st.container(border=True):
             st.markdown(f'**{title}**')
             st.caption(f'{korean_title}')
+            st.markdown(f'{body}')
+            logging.info(f'바디내용: {body}')
             st.markdown(f'- {row["언론사"]}, {row["발행시간"]} <a href="{row["링크"]}" target="_blank">📝</a>',
                         unsafe_allow_html=True)
         # st.write(' - 언론사: ' + row['언론사'] + '  - 발행시각: ' + row['발행시간'])
@@ -153,9 +157,9 @@ def fetch_sns_reddit(keyword_, infinite_loop=False):
         news_df_ = get_sns_outage_reddit(keyword_)
         
         # 번역 적용
-        news_df_['translated_title'] = news_df_['제목'].apply(lambda x: translate_text(x, 'KO'))
+        # news_df_['translated_title'] = news_df_['제목'].apply(lambda x: translate_text(x, 'KO'))
         
-        display_news_df(news_df_, keyword_)
+        display_reddit_df(news_df_, keyword_)
 
     while infinite_loop:
         time.sleep(st.session_state.search_interval_min * 60)
@@ -163,16 +167,16 @@ def fetch_sns_reddit(keyword_, infinite_loop=False):
             news_df_ = get_sns_outage_reddit(keyword_)
             
             # 번역 적용
-            news_df_['translated_title'] = news_df_['제목'].apply(lambda x: translate_text(x, 'KO'))
+            # news_df_['translated_title'] = news_df_['제목'].apply(lambda x: translate_text(x, 'KO'))
             
-            display_news_df(news_df_, keyword_)
+            display_reddit_df(news_df_, keyword_)
 
 def fetch_sns_twitter(keyword_, infinite_loop=False):
     with st.spinner('Twitter SNS 검색 및 번역 중...'):
         news_df_ = get_sns_outage_twitter(keyword_)
         
         # 번역 적용
-        news_df_['translated_title'] = news_df_['제목'].apply(lambda x: translate_text(x, 'KO'))
+        # news_df_['translated_title'] = news_df_['제목'].apply(lambda x: translate_text(x, 'KO'))
         
         display_news_df(news_df_, keyword_)
 
@@ -182,7 +186,7 @@ def fetch_sns_twitter(keyword_, infinite_loop=False):
             news_df_ = get_sns_outage_twitter(keyword_)
             
             # 번역 적용
-            news_df_['translated_title'] = news_df_['제목'].apply(lambda x: translate_text(x, 'KO'))
+            # news_df_['translated_title'] = news_df_['제목'].apply(lambda x: translate_text(x, 'KO'))
             
             display_news_df(news_df_, keyword_)
 
@@ -194,7 +198,7 @@ def fetch_and_summarize_sns(keyword_, sns_type):
             news_df_ = get_sns_outage_twitter(keyword_)
         
         # 번역 적용
-        news_df_['translated_title'] = news_df_['제목'].apply(lambda x: translate_text(x, 'KO'))
+        # news_df_['translated_title'] = news_df_['제목'].apply(lambda x: translate_text(x, 'KO'))
         
         # 요약을 위한 기사 리스트 생성
         articles = [{'title': row['제목'], 'content': row['translated_title']} for _, row in news_df_.iterrows()]
@@ -463,9 +467,7 @@ if search_button:
     reddit_summaries, reddit_df = fetch_and_summarize_sns(service_code_name + " " + and_keyword[0] if and_keyword else service_code_name, 'Reddit')
     twitter_summaries, twitter_df = fetch_and_summarize_sns(service_code_name + " " + and_keyword[0] if and_keyword else service_code_name, 'Twitter')
     
-    # 요약 섹션
-    st.header("SNS 내용 요약")
-    col1, col2 = st.columns(2)
+
 
     # SNS 게시물 섹션
     st.header("SNS 게시물")
@@ -487,6 +489,11 @@ if search_button:
         else:
             st.write("Twitter 게시물을 가져오지 못했습니다.")
 
+    # reddit_df, twitter_df 받아와서 번역
+
+    # 요약 섹션
+    st.header("SNS 내용 요약")
+    col1, col2 = st.columns(2)
     
     with col1:
         if reddit_summaries:
