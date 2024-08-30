@@ -44,6 +44,7 @@ def get_sns_outage_twitter(keyword_):
 
     result = {'제목': tweets_text, '언론사': tweets_src, '발행시간': tweets_date, '링크': tweets_link}
     df = pd.DataFrame(result)
+
     return df
 
 def get_sns_outage_reddit(keyword_):
@@ -79,10 +80,18 @@ def display_news_df(ndf, keyword_):
         # title = row['제목'].replace(keyword_, f':yellow-background[{keyword_}]')
         # logging.info('keyword: ' + keyword_)
         # logging.info('before: ' + row['제목'])
-        title = re.sub(keyword_, f':blue-background[{keyword_}]', row['제목'], flags=re.IGNORECASE)
-        if and_keyword:
-            title = re.sub(and_keyword[0], f':blue-background[{and_keyword[0]}]', title, flags=re.IGNORECASE)
+        
+        # title = re.sub(keyword_, f':blue-background[{keyword_}]', row['제목'], flags=re.IGNORECASE)
+        # if and_keyword:
+        #     title = re.sub(and_keyword[0], f':blue-background[{and_keyword[0]}]', title, flags=re.IGNORECASE)
         # logging.info('after : ' + title)
+        # 제목 문자열 복사
+        title = row['제목']
+
+        # keyword_ 리스트의 각 키워드에 대해 확인 후, 존재하면 re.sub() 적용
+        for kw in keyword_:
+            if re.search(kw, title, flags=re.IGNORECASE):  # title에 keyword가 있는지 확인
+                title = re.sub(kw, f':blue-background[{kw}]', title, flags=re.IGNORECASE)
 
         # 제목 번역
         korean_title = translate_eng_to_kor(row['제목'])
@@ -100,6 +109,7 @@ def display_news_df(ndf, keyword_):
         st.write(f'✅ 신규 SNS 없습니다. ({current_time})')
 
 
+<<<<<<< HEAD
 def fetch_sns_reddit(keyword_, infinite_loop=False):
     with st.spinner('Reddit SNS 검색 및 번역 중...'):
         news_df_ = get_sns_outage_reddit(keyword_)
@@ -107,10 +117,21 @@ def fetch_sns_reddit(keyword_, infinite_loop=False):
         # 번역 적용
         news_df_['translated_title'] = news_df_['제목'].apply(lambda x: translate_text(x, 'KO'))
         
+=======
+def fetch_sns_reddit(keyword_,  infinite_loop=False):
+    with st.spinner('SNS 검색중...'):
+        news_df_ = pd.DataFrame()
+        logging.info(keyword_)
+        for k in keyword_:
+            df_ = get_sns_outage_reddit(k)
+            news_df_ = pd.concat([news_df_, df_], ignore_index=True)
+        # st.write(news_df_)
+>>>>>>> 6d6bc04992edc06e71f31723cb6ee61e61dc52d0
         display_news_df(news_df_, keyword_)
 
     while infinite_loop:
         time.sleep(st.session_state.search_interval_min * 60)
+<<<<<<< HEAD
         with st.spinner('Reddit SNS 검색 및 번역 중...'):
             news_df_ = get_sns_outage_reddit(keyword_)
             
@@ -126,16 +147,44 @@ def fetch_sns_twitter(keyword_, infinite_loop=False):
         # 번역 적용
         news_df_['translated_title'] = news_df_['제목'].apply(lambda x: translate_text(x, 'KO'))
         
+=======
+        with st.spinner('SNS 검색중...'):
+            news_df_ = pd.DataFrame()
+            logging.info(keyword_)
+            for k in keyword_:
+                df_ = get_sns_outage_reddit(k)
+                news_df_ = pd.concat([news_df_, df_], ignore_index=True)
+            # st.write(news_df_)
+            display_news_df(news_df_, keyword_)
+
+def fetch_sns_twitter(keyword_, infinite_loop=False):
+    with st.spinner('SNS 검색중...'):
+        news_df_ = pd.DataFrame()
+        logging.info(keyword_)
+        for k in keyword_:
+            df_ = get_sns_outage_twitter(k)
+            news_df_ = pd.concat([news_df_, df_], ignore_index=True)
+        # st.write(news_df_)
+>>>>>>> 6d6bc04992edc06e71f31723cb6ee61e61dc52d0
         display_news_df(news_df_, keyword_)
 
     while infinite_loop:
         time.sleep(st.session_state.search_interval_min * 60)
+<<<<<<< HEAD
         with st.spinner('Twitter SNS 검색 및 번역 중...'):
             news_df_ = get_sns_outage_twitter(keyword_)
             
             # 번역 적용
             news_df_['translated_title'] = news_df_['제목'].apply(lambda x: translate_text(x, 'KO'))
             
+=======
+        with st.spinner('SNS 검색중...'):
+            news_df_ = pd.DataFrame()
+            for k in keyword_:
+                df_ = get_sns_outage_twitter(k)
+                news_df_ = pd.concat([news_df_, df_], ignore_index=True)
+            # st.write(news_df_)
+>>>>>>> 6d6bc04992edc06e71f31723cb6ee61e61dc52d0
             display_news_df(news_df_, keyword_)
 
 # # # # # # # # # # # # # # #
@@ -361,53 +410,27 @@ if search_button:
     col1_placeholder = col1.empty()
     col2_placeholder = col2.empty()
 
-
-
     # 컬럼1 - SNS
     with col1_placeholder.container():
         st.session_state.news_list = []  # SNS 세션 클리어
         st.write('📰 Reddit List')
         if and_keyword:
-            fetch_sns_reddit(service_code_name+" "+and_keyword[0])
+            # fetch_sns_reddit(service_code_name+" ".join(and_keyword))
+            srch_keyword = [service_code_name + ' ' + k for k in and_keyword]
+            logging.info(f"{srch_keyword}를 검색하겠습니다.")
+            fetch_sns_reddit(srch_keyword)
         else:
-            fetch_sns_reddit(service_code_name)
+            fetch_sns_reddit([service_code_name])
 
     # 컬럼2 - 차트
     with col2_placeholder.container():
         st.session_state.news_list = []  # SNS 세션 클리어
         st.write('📰 Twitter List')
         if and_keyword:
-            fetch_sns_twitter(service_code_name+" "+and_keyword[0])
+            # fetch_sns_twitter(service_code_name+" ".join(and_keyword))
+            srch_keyword = [service_code_name + ' ' + k for k in and_keyword]
+            logging.info(f"{srch_keyword}를 검색하겠습니다.")
+            fetch_sns_twitter(srch_keyword)
         else:
-            fetch_sns_twitter(service_code_name)
+            fetch_sns_twitter([service_code_name])
 
-
-# # 주기적으로 페이지를 새로고침한다.
-# # 사이드바에 타이머 표기
-# st.sidebar.divider()
-
-# # 타이머를 표시할 위치 예약
-# timer_placeholder = st.sidebar.empty()
-
-# # 카운트다운 초 계산
-# if service_code_name:
-#     if st.session_state.search_interval_timer_cache <= 0:
-#         st.session_state.search_interval_timer_cache = st.session_state.search_interval_min * 60
-
-#     # 타이머 실행
-#     while st.session_state.search_interval_timer_cache >= 0:
-#         # 타이머 갱신
-#         timer_placeholder.markdown(f"⏳ 재검색까지 {st.session_state.search_interval_timer_cache}초")
-
-#         # 1초 대기
-#         time.sleep(1)
-
-#         # 타이머 감소
-#         st.session_state.search_interval_timer_cache -= 1
-
-#     # 타이머 완료 메시지
-#     timer_placeholder.markdown("⏰ 카운트다운 완료! 서비스 상태 재검색!")
-
-#     logging.info('재검색!!!')
-#     config.init_status_df()  # 서비스 상태 초기화
-#     st.rerun()
