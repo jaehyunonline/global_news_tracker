@@ -19,6 +19,7 @@ from deepl_translator import translate_text
 from article_summarizer import summarize_articles, get_api_key
 
 
+
 # 로깅 설정
 # logging.basicConfig(level=logging.INFO)
 
@@ -157,7 +158,7 @@ def fetch_sns_reddit(keyword_, infinite_loop=False):
         news_df_ = get_sns_outage_reddit(keyword_)
         
         # 번역 적용
-        # news_df_['translated_title'] = news_df_['제목'].apply(lambda x: translate_text(x, 'KO'))
+        news_df_['translated_title'] = news_df_['제목'].apply(lambda x: translate_text(x, 'KO'))
         
         display_reddit_df(news_df_, keyword_)
 
@@ -167,7 +168,7 @@ def fetch_sns_reddit(keyword_, infinite_loop=False):
             news_df_ = get_sns_outage_reddit(keyword_)
             
             # 번역 적용
-            # news_df_['translated_title'] = news_df_['제목'].apply(lambda x: translate_text(x, 'KO'))
+            news_df_['translated_title'] = news_df_['제목'].apply(lambda x: translate_text(x, 'KO'))
             
             display_reddit_df(news_df_, keyword_)
 
@@ -176,7 +177,7 @@ def fetch_sns_twitter(keyword_, infinite_loop=False):
         news_df_ = get_sns_outage_twitter(keyword_)
         
         # 번역 적용
-        # news_df_['translated_title'] = news_df_['제목'].apply(lambda x: translate_text(x, 'KO'))
+        news_df_['translated_title'] = news_df_['제목'].apply(lambda x: translate_text(x, 'KO'))
         
         display_news_df(news_df_, keyword_)
 
@@ -186,7 +187,7 @@ def fetch_sns_twitter(keyword_, infinite_loop=False):
             news_df_ = get_sns_outage_twitter(keyword_)
             
             # 번역 적용
-            # news_df_['translated_title'] = news_df_['제목'].apply(lambda x: translate_text(x, 'KO'))
+            news_df_['translated_title'] = news_df_['제목'].apply(lambda x: translate_text(x, 'KO'))
             
             display_news_df(news_df_, keyword_)
 
@@ -198,7 +199,7 @@ def fetch_and_summarize_sns(keyword_, sns_type):
             news_df_ = get_sns_outage_twitter(keyword_)
         
         # 번역 적용
-        # news_df_['translated_title'] = news_df_['제목'].apply(lambda x: translate_text(x, 'KO'))
+        news_df_['translated_title'] = news_df_['제목'].apply(lambda x: translate_text(x, 'KO'))
         
         # 요약을 위한 기사 리스트 생성
         articles = [{'title': row['제목'], 'content': row['translated_title']} for _, row in news_df_.iterrows()]
