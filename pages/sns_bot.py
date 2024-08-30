@@ -101,6 +101,53 @@ def display_news_df(ndf, keyword_):
         st.write(f'✅ 신규 SNS 없습니다. ({current_time})')
 
 
+def display_news_df(ndf, keyword_):
+    # st.divider()
+    kst = pytz.timezone('Asia/Seoul')
+    current_time = datetime.now(kst).strftime('%Y-%m-%d %H:%M:%S')
+
+    if ndf is None or len(ndf) == 0:
+        st.write(f'✅ 검색된 SNS 없습니다. ({current_time})')
+        return
+
+    # st.write('SNS 검색 결과')
+
+    disp_cnt = 0
+    for i, row in ndf.iterrows():
+        # 이미 출력했던 SNS라면 스킵한다.
+        if row['제목'] in st.session_state.news_list:
+            logging.info('SNS 스킵!!! - ' + row['제목'])
+            continue
+
+        # 출력한 SNS 리스트에 추가한다.
+        st.session_state.news_list.append(row['제목'])
+        disp_cnt += 1
+
+        # title = row['제목'].replace(keyword_, f':yellow-background[{keyword_}]')
+        # logging.info('keyword: ' + keyword_)
+        # logging.info('before: ' + row['제목'])
+        title = re.sub(keyword_, f':blue-background[{keyword_}]', row['제목'], flags=re.IGNORECASE)
+        if and_keyword:
+            title = re.sub(and_keyword[0], f':blue-background[{and_keyword[0]}]', title, flags=re.IGNORECASE)
+        # logging.info('after : ' + title)
+
+        # 제목 번역
+        korean_title = translate_eng_to_kor(row['제목'])
+        
+        with st.container(border=True):
+            st.markdown(f'**{title}**')
+            st.caption(f'{korean_title}')
+            st.markdown(f'- {row["언론사"]}, {row["발행시간"]} <a href="{row["링크"]}" target="_blank">📝</a>',
+                        unsafe_allow_html=True)
+        # st.write(' - 언론사: ' + row['언론사'] + '  - 발행시각: ' + row['발행시간'])
+
+    if disp_cnt > 0:
+        st.write(f'✅ SNS 표시 완료 ({current_time})')
+    else:
+        st.write(f'✅ 신규 SNS 없습니다. ({current_time})')
+
+
+
 def fetch_sns_reddit(keyword_, infinite_loop=False):
     with st.spinner('Reddit SNS 검색 및 번역 중...'):
         news_df_ = get_sns_outage_reddit(keyword_)
@@ -419,19 +466,11 @@ if search_button:
     # 요약 섹션
     st.header("SNS 내용 요약")
     col1, col2 = st.columns(2)
-    
-    with col1:
-        if reddit_summaries:
-            display_summary(reddit_summaries, 'Reddit')
-    
-    with col2:
-        if twitter_summaries:
-            display_summary(twitter_summaries, 'Twitter')
-    
+
     # SNS 게시물 섹션
     st.header("SNS 게시물")
     col3, col4 = st.columns(2)
-    
+
     with col3:
         st.subheader("Reddit 게시물")
         if reddit_df is not None:
@@ -447,6 +486,18 @@ if search_button:
             display_news_df(twitter_df, service_code_name)
         else:
             st.write("Twitter 게시물을 가져오지 못했습니다.")
+
+    
+    with col1:
+        if reddit_summaries:
+            display_summary(reddit_summaries, 'Reddit')
+    
+    with col2:
+        if twitter_summaries:
+            display_summary(twitter_summaries, 'Twitter')
+    
+
+    
 
 # # 주기적으로 페이지를 새로고침한다.
 # # 사이드바에 타이머 표기

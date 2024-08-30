@@ -17,3 +17,4 @@ seleniumbase
 
 altair
 numpy
+openai
