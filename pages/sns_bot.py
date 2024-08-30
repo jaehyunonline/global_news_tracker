@@ -15,7 +15,7 @@ from google.oauth2 import service_account
 import config
 import reddit_bot
 import twitter_bot
-
+from deepl_translator import translate_text
 
 
 # 로깅 설정
@@ -101,29 +101,41 @@ def display_news_df(ndf, keyword_):
 
 
 def fetch_sns_reddit(keyword_, infinite_loop=False):
-    with st.spinner('SNS 검색중...'):
+    with st.spinner('Reddit SNS 검색 및 번역 중...'):
         news_df_ = get_sns_outage_reddit(keyword_)
-        # st.write(news_df_)
+        
+        # 번역 적용
+        news_df_['translated_title'] = news_df_['제목'].apply(lambda x: translate_text(x, 'KO'))
+        
         display_news_df(news_df_, keyword_)
 
     while infinite_loop:
         time.sleep(st.session_state.search_interval_min * 60)
-        with st.spinner('SNS 검색중...'):
+        with st.spinner('Reddit SNS 검색 및 번역 중...'):
             news_df_ = get_sns_outage_reddit(keyword_)
-            # st.write(news_df_)
+            
+            # 번역 적용
+            news_df_['translated_title'] = news_df_['제목'].apply(lambda x: translate_text(x, 'KO'))
+            
             display_news_df(news_df_, keyword_)
 
 def fetch_sns_twitter(keyword_, infinite_loop=False):
-    with st.spinner('SNS 검색중...'):
+    with st.spinner('Twitter SNS 검색 및 번역 중...'):
         news_df_ = get_sns_outage_twitter(keyword_)
-        # st.write(news_df_)
+        
+        # 번역 적용
+        news_df_['translated_title'] = news_df_['제목'].apply(lambda x: translate_text(x, 'KO'))
+        
         display_news_df(news_df_, keyword_)
 
     while infinite_loop:
         time.sleep(st.session_state.search_interval_min * 60)
-        with st.spinner('SNS 검색중...'):
+        with st.spinner('Twitter SNS 검색 및 번역 중...'):
             news_df_ = get_sns_outage_twitter(keyword_)
-            # st.write(news_df_)
+            
+            # 번역 적용
+            news_df_['translated_title'] = news_df_['제목'].apply(lambda x: translate_text(x, 'KO'))
+            
             display_news_df(news_df_, keyword_)
 
 # # # # # # # # # # # # # # #
