@@ -8,8 +8,8 @@ reddit = praw.Reddit(client_id='ca9Fu2aX5UjAuYXvYSLcjQ',
 
 
 
-MAX_RESULT_CNT = 10
-MAX_BODY_CHAR_CNT = 250
+MAX_RESULT_CNT = 5
+MAX_BODY_CHAR_CNT = 120
 
 
 
@@ -17,7 +17,7 @@ MAX_BODY_CHAR_CNT = 250
 result = {}
 
 
-def extract_text(text, keyword, context_length = (MAX_BODY_CHAR_CNT/2)):
+def extract_text(text, keyword, context_length = MAX_BODY_CHAR_CNT):
     # 키워드 위치 찾기
     keyword_position = text.find(keyword)
     
@@ -54,6 +54,8 @@ def get_result(keyword):
         # 게시물 내용 (selftext) 가져오기
         post_content = post.selftext if post.selftext else "No content available"
 
+        print(f'{post_content}\n')
+
 
 
         title.append(post.title)
@@ -66,12 +68,12 @@ def get_result(keyword):
     
     result = {'제목': title, '본문' : body, '언론사': source, '발행시간': issued_time, '링크': url}
 
-    print(result)
+    # print(result)
 
     return result
 
 
 
 # result = {'제목': 'test tweets', '언론사': 'twitter', '발행시간': '2024-08-29 14:45 +09:00', '링크': 'https://x.com/login'}
-
+# get_result('Youtube')
 
