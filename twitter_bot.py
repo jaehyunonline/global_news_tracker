@@ -196,7 +196,7 @@ def search_tweets_scroll(driver, query, max_tweets=50):
         print(f"Tweet {idx} [{tweet_date}]: {tweet_text}\n")
 
 # 크레덴셜 파일 경로
-credentials_file = 'twitter_credentials.txt'
+credentials_file = 'twitter_info.txt'
 
 # # 사용자 이름과 비밀번호 로드
 username, password = load_credentials(credentials_file)
